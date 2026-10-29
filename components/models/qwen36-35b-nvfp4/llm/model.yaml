@@ -43,9 +43,11 @@ spec:
           # --max-num-seqs 4: at most 4 requests run at once (DGX Spark sizing), the rest queue
           - name: VLLM_ADDITIONAL_ARGS
             value: "--tool-call-parser qwen3_coder --enable-auto-tool-choice --gpu-memory-utilization=0.5000 --kv-cache-dtype fp8 --enable-force-include-usage --enable-prefix-caching --max-num-batched-tokens 4096 --max-num-seqs 4"
+        # CPU request 2 (limit 4): vLLM idles around 0.2 cores and the single node's CPU
+        # requests are the scarce resource; the limit still allows bursts up to 4
         resources:
           requests:
-            cpu: "4"
+            cpu: "2"
             memory: 65Gi
             nvidia.com/gpu: "1"
           limits:
