@@ -38,9 +38,11 @@ spec:
           # --enable-force-include-usage: report token usage on streamed responses so MaaS rate limits apply
           # --enable-prefix-caching: off by default for this hybrid (linear + full attention) model; agents
           #   resend the whole context every turn, so reuse the already-computed prefix
+          #   (Mamba cache "align" mode, experimental), which needs --max-num-batched-tokens >= the
+          #   2096-token cache block, so raise it from the 2048 default
           # --max-num-seqs 4: at most 4 requests run at once (DGX Spark sizing), the rest queue
           - name: VLLM_ADDITIONAL_ARGS
-            value: "--tool-call-parser qwen3_coder --enable-auto-tool-choice --gpu-memory-utilization=0.5000 --kv-cache-dtype fp8 --enable-force-include-usage --enable-prefix-caching --max-num-seqs 4"
+            value: "--tool-call-parser qwen3_coder --enable-auto-tool-choice --gpu-memory-utilization=0.5000 --kv-cache-dtype fp8 --enable-force-include-usage --enable-prefix-caching --max-num-batched-tokens 4096 --max-num-seqs 4"
         resources:
           requests:
             cpu: "4"
