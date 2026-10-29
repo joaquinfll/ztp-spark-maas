@@ -7,6 +7,7 @@ resources:
   - apps/metallb-operator.yaml
   - apps/gpu-operators.yaml
   - apps/maas-operators.yaml
+  - apps/observability-operators.yaml
   - apps/lvms-instance.yaml
   - apps/metallb-instance.yaml
   - apps/gpu-instances.yaml
@@ -14,4 +15,5 @@ resources:
   - apps/maas-db.yaml
   - apps/rhoai-config.yaml
   - apps/models.yaml
+  - apps/observability.yaml
   - apps/openshift-mcp-server.yaml

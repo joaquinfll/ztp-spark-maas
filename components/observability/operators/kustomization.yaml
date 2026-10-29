@@ -1,0 +1,12 @@
+# Operators behind RHOAI monitoring (DSCI spec.monitoring) and MaaS usage logging:
+#   cluster-observability  MonitoringStack, ThanosQuerier, Perses dashboards
+#   opentelemetry          OpenTelemetryCollector (metrics/traces pipeline, usage logs)
+#   tempo                  TempoStack for traces
+#   loki                   LokiStack for MaaS usage logs
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - cluster-observability
+  - opentelemetry
+  - tempo
+  - loki

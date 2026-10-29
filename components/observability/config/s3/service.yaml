@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: versity
+  namespace: observability-s3
+  labels:
+    app: versity
+spec:
+  selector:
+    app: versity
+  ports:
+    - name: s3
+      port: 7070
+      targetPort: s3

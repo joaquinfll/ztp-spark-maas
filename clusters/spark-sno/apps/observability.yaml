@@ -1,0 +1,33 @@
+# Versity S3 + LokiStack for MaaS usage logs, gateway telemetry and usage logging switches
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observability
+  namespace: openshift-gitops
+  annotations:
+    # After rhoai-config: redhat-ods-monitoring and the MaaS CRs come from the RHOAI operator
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/joaquinfll/ztp-spark-maas.git
+    targetRevision: main
+    path: components/observability/config
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - SkipDryRunOnMissingResource=true
+      # Lets maas-telemetry.yaml patch only its fields on operator-owned CRs
+      - ServerSideApply=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

@@ -1,0 +1,11 @@
+# RHOAI/MaaS observability configuration (needs components/observability/operators):
+#   s3/                  Versity S3 gateway on an LVMS volume, object storage for Loki
+#   lokistack.yaml       LokiStack "usage" that MaaS usage logging writes to
+#   maas-telemetry.yaml  gateway telemetry + usage logging switches on operator-created CRs
+# DSCI spec.monitoring (metrics/traces) lives in components/rhoai-config.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - s3
+  - lokistack.yaml
+  - maas-telemetry.yaml

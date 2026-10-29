@@ -1,0 +1,31 @@
+# Partial manifests for CRs the RHOAI operator (maas-controller) creates and owns.
+# The observability Application uses ServerSideApply, so Argo CD manages only the
+# fields below; Prune=false/Delete=false keep it from ever deleting the objects.
+#
+# Gateway telemetry: maas-controller then creates the TelemetryPolicy and Istio
+# Telemetry in openshift-ingress (per-model/subscription/organization metrics).
+# captureUser adds the user ID to metrics, which the MaaS UI Usage tab needs; it is
+# off for privacy (GDPR) - set it to true if that is acceptable here.
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: MaasTenantConfig
+metadata:
+  name: default-tenant
+  namespace: models-as-a-service
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  telemetry:
+    enabled: true
+    metrics:
+      captureUser: false
+---
+# Usage logging: per-request OTLP access logs from the gateway to LokiStack "usage",
+# plus the admin and user-scoped usage dashboards (Observe & monitor).
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: Config
+metadata:
+  name: default
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  usageLogging: true

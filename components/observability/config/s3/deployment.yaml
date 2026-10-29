@@ -1,0 +1,81 @@
+# Versity S3 gateway (posix backend): every top-level directory of /data is a bucket,
+# so the init container creates the "loki" bucket. Plain HTTP, in-cluster only.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: versity
+  namespace: observability-s3
+  labels:
+    app: versity
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: versity
+  template:
+    metadata:
+      labels:
+        app: versity
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: buckets
+          image: docker.io/versity/versitygw:v1.10.0
+          command: ["sh", "-c", "mkdir -p /data/loki"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      containers:
+        - name: versitygw
+          image: docker.io/versity/versitygw:v1.10.0
+          args: ["--port", ":7070", "--health", "/health", "--quiet", "posix", "/data"]
+          env:
+            - name: ROOT_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: versity-root
+                  key: ROOT_ACCESS_KEY_ID
+            - name: ROOT_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: versity-root
+                  key: ROOT_SECRET_ACCESS_KEY
+          ports:
+            - name: s3
+              containerPort: 7070
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: s3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: s3
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: versity-data

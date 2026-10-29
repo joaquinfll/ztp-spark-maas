@@ -1,0 +1,33 @@
+# LokiStack for MaaS usage logs (Configs.maas usageLogging). The name and namespace are
+# what the RHOAI operator's usage-logs OpenTelemetry Collector exports to.
+apiVersion: loki.grafana.com/v1
+kind: LokiStack
+metadata:
+  name: usage
+  namespace: redhat-ods-monitoring
+spec:
+  managementState: Managed
+  size: 1x.demo
+  limits:
+    global:
+      retention:
+        days: 30
+      otlp:
+        streamLabels:
+          resourceAttributes:
+            - name: service.name
+            - name: subscription
+            - name: model
+            - name: response_type
+            - name: kubernetes_namespace_name
+  storage:
+    schemas:
+      - effectiveDate: "2024-10-01"
+        version: v13
+    secret:
+      credentialMode: static
+      name: usage-loki-s3
+      type: s3
+  storageClassName: lvms-vg1
+  tenants:
+    mode: openshift-logging

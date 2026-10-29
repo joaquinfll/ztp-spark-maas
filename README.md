@@ -21,19 +21,21 @@ components/
   maas-operators/            cert-manager, Leader Worker Set, Connectivity Link, RHOAI (stable-3.x)
   maas-platform/             Kuadrant/Authorino, user workload monitoring, Gateway, passthrough Route, fixups Job
   maas-db/                   PostgreSQL + Job that generates the DB secrets in-cluster
-  rhoai-config/              DSCI, DSC (MaaS enabled), HardwareProfile, dashboard flags
+  rhoai-config/              DSCI (monitoring metrics/traces), DSC (MaaS enabled), HardwareProfile, dashboard flags
   models/                    llm namespace, agentic-coders Group, Qwen3.6-35B-A3B NVFP4, MaaS tiers
+  observability/operators    Cluster Observability, OpenTelemetry, Tempo, Loki operators
+  observability/config       Versity S3 + LokiStack (MaaS usage logs), gateway telemetry and usage logging
   openshift-mcp-server/      Red Hat OpenShift MCP server Helm values + dashboard registration
 ```
 
 | Wave | Applications |
 |------|--------------|
-| 0 | `lvms-operator`, `metallb-operator`, `gpu-operators`, `maas-operators` |
+| 0 | `lvms-operator`, `metallb-operator`, `gpu-operators`, `maas-operators`, `observability-operators` |
 | 1 | `lvms-instance`, `metallb-instance`, `gpu-instances` |
 | 2 | `maas-platform` |
 | 3 | `maas-db` |
 | 4 | `rhoai-config` |
-| 5 | `models` |
+| 5 | `models`, `observability` |
 | 6 | `openshift-mcp-server` |
 
 Waves only order creation. Every child Application has automated prune and self-heal, `SkipDryRunOnMissingResource=true`, and retries 10 times (30s to 5m backoff, about 40 minutes). If a sync still fails after that, Argo CD waits for a new commit or a manual sync. A first install takes 30-60 minutes (operators, GPU driver build, model pull and load).
@@ -41,6 +43,7 @@ Waves only order creation. Every child Application has automated prune and self-
 ## Notes
 
 - **Jobs:** `maas-db/secrets-job.yaml` and `maas-platform/fixups-job.yaml` cover steps with no declarative equivalent (DB password, Authorino TLS env, Kuadrant restart). They are idempotent and use the pinned 4.22.18 aarch64 `oc` image. Jobs are immutable: delete the Job in the cluster before changing its spec.
+- **Observability:** RHOAI dashboards (Perses), metrics and traces in `redhat-ods-monitoring`; MaaS usage logs in LokiStack `usage`, stored on a Versity S3 gateway (`observability-s3`, 50Gi LVMS volume, credentials generated in-cluster). `captureUser` is off in `maas-telemetry.yaml`; the MaaS UI Usage tab needs it on.
 - **Never pruned:** `redhat-ods-applications`, `redhat-ai-gateway-infra` and `llm` carry `Prune=false`.
 - **OpenShift MCP server:** Red Hat chart `redhat-openshift-mcp-server` 0.3.0 (charts.openshift.io), release `redhat-openshift-mcp-server` in `llm`. Read-only (`read_only`, `disable_destructive`, Secrets denied) and bound to `cluster-reader`. In-cluster only at `http://redhat-openshift-mcp-server.llm.svc.cluster.local:8080/mcp`, listed on the dashboard through the `gen-ai-aa-mcp-servers` ConfigMap. Argo CD renders the chart, so don't manage the release with `helm`.
 
