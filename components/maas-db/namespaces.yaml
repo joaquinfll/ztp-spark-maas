@@ -1,0 +1,18 @@
+# redhat-ods-applications is normally created by the RHOAI operator, and
+# redhat-ai-gateway-infra by the DSC (3.5+). Pre-create both so the DB secrets can land
+# before the DSC enables MaaS - the operator adopts them later. Never pruned.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: redhat-ai-gateway-infra
+  labels:
+    maas.opendatahub.io/gateway-access: "true"
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false

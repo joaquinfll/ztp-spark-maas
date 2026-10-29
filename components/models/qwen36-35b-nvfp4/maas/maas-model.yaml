@@ -1,0 +1,12 @@
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: MaaSModelRef
+metadata:
+  name: redhataiqwen36-35b-a3b-nvfp4
+  namespace: llm
+  annotations:
+    openshift.io/display-name: "RedHatAI/Qwen3.6-35B-A3B-NVFP4"
+    openshift.io/description: "Qwen3.6 35B-A3B MoE (NVFP4) on vLLM with NVIDIA Blackwell GPU"
+spec:
+  modelRef:
+    kind: LLMInferenceService
+    name: redhataiqwen36-35b-a3b-nvfp4

@@ -1,0 +1,31 @@
+# cert-manager, LWS, RHCL, RHOAI 3.5
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: maas-operators
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/joaquinfll/ztp-spark-maas.git
+    targetRevision: main
+    path: components/maas-operators
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      # Operand CRDs appear only after the operator installs - keep retrying until they exist
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

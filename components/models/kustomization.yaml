@@ -1,0 +1,7 @@
+# Guide Phase 5: Qwen3.6-35B-A3B NVFP4 + MaaS free/premium/agentic tiers
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace-llm.yaml
+  - group-agentic-coders.yaml
+  - qwen36-35b-nvfp4

@@ -1,0 +1,12 @@
+# LoadBalancer address for the MaaS Gateway (service maas-default-gateway-openshift-default).
+# Node is 192.168.6.20, so the pool is the next address (node IP + 1).
+# Keep it outside the router's DHCP pool.
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: maas-pool
+  namespace: metallb-system
+spec:
+  addresses:
+    - 192.168.6.21-192.168.6.21
+  autoAssign: true

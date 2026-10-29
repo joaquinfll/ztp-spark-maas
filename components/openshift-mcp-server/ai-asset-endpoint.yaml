@@ -1,0 +1,17 @@
+# Registers the MCP server on the RHOAI dashboard (Gen AI studio > AI asset
+# endpoints > MCP servers) and makes it selectable in the Playground. RHOAI 3.5
+# does not discover MCP servers by itself; it only reads this ConfigMap. Key =
+# display name (unique, case-sensitive), value = JSON with url and description.
+# The URL is the chart's in-cluster Service, so only workloads inside the
+# cluster, like the Playground, can use it.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gen-ai-aa-mcp-servers
+  namespace: redhat-ods-applications
+data:
+  OpenShift-MCP-Server: |
+    {
+      "url": "http://redhat-openshift-mcp-server.llm.svc.cluster.local:8080/mcp",
+      "description": "Read-only access to the spark-sno OpenShift cluster: list and get resources, events, pod logs and metrics, namespaces and nodes. Secrets are not accessible and no tool can create, change or delete anything."
+    }

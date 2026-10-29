@@ -1,0 +1,20 @@
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: MaaSSubscription
+metadata:
+  name: qwen36-35b-nvfp4-premium
+  namespace: models-as-a-service
+  annotations:
+    openshift.io/display-name: "Qwen3.6 35B NVFP4 Premium Tier"
+    openshift.io/description: "Premium tier: 100000 tokens/min for all authenticated users"
+spec:
+  owner:
+    groups:
+      - name: system:authenticated
+    users: []
+  modelRefs:
+    - name: redhataiqwen36-35b-a3b-nvfp4
+      namespace: llm
+      tokenRateLimits:
+        - limit: 100000
+          window: 1m
+  priority: 20

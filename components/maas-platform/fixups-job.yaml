@@ -1,0 +1,56 @@
+# Imperative steps that have no declarative equivalent:
+#   1. Authorino TLS env vars on the operator-managed authorino Deployment (docs 1.4 step 3)
+#   2. Restart the Kuadrant operator if Kuadrant reports MissingDependency once the
+#      Gateway exists (Kuadrant CR created before GatewayClass provisioned Istio)
+# Idempotent; loops until done (up to ~60 min) and Job retries cover longer waits.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: maas-platform-fixups
+  namespace: kuadrant-system
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      serviceAccountName: maas-platform-fixups
+      restartPolicy: OnFailure
+      containers:
+        - name: fixups
+          image: quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:c732e0f5ae6b5d4d30062f367f4e10c5590f27c5342142db6eac8dcb6592a7a1
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -uo pipefail
+              CA=/etc/ssl/certs/openshift-service-ca/service-ca-bundle.crt
+              for i in $(seq 1 120); do
+                if oc get deployment authorino -n kuadrant-system >/dev/null 2>&1; then
+                  if ! oc get deployment authorino -n kuadrant-system \
+                      -o jsonpath='{.spec.template.spec.containers[0].env[*].name}' | grep -q SSL_CERT_FILE; then
+                    oc -n kuadrant-system set env deployment/authorino SSL_CERT_FILE=$CA REQUESTS_CA_BUNDLE=$CA
+                    echo "Authorino TLS env vars set"
+                  fi
+                  AUTHORINO_DONE=true
+                fi
+                READY=$(oc get kuadrant kuadrant -n kuadrant-system \
+                  -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || true)
+                REASON=$(oc get kuadrant kuadrant -n kuadrant-system \
+                  -o jsonpath='{.status.conditions[?(@.type=="Ready")].reason}' 2>/dev/null || true)
+                if [ "$READY" = "True" ] && [ "${AUTHORINO_DONE:-false}" = true ]; then
+                  echo "Kuadrant Ready and Authorino configured - done"; exit 0
+                fi
+                if [ "$REASON" = "MissingDependency" ] && \
+                   oc get gateway maas-default-gateway -n openshift-ingress >/dev/null 2>&1 && \
+                   [ "${RESTARTED:-false}" = false ] && [ "$i" -ge 6 ]; then
+                  echo "Kuadrant MissingDependency with Gateway present - restarting kuadrant operator"
+                  oc get pods -n openshift-operators -o name | grep kuadrant-operator-controller | \
+                    xargs -r oc delete -n openshift-operators
+                  RESTARTED=true
+                fi
+                sleep 30
+              done
+              echo "Timed out waiting for Kuadrant/Authorino"; exit 1
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi

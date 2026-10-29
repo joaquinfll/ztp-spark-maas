@@ -1,0 +1,13 @@
+# Guide Phase 2: Kuadrant + Authorino TLS, UWM, GatewayClass, MaaS Gateway (+ passthrough Route)
+# Gateway rendered for MAAS_HOSTNAME=maas.apps.spark-sno.home.arpa, CERT_NAME=router-certs-default
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - kuadrant
+  - cluster-monitoring-config.yaml
+  - gatewayclass.yaml
+  - gateway-resources.yaml
+  - gateway.yaml
+  - route-passthrough.yaml
+  - fixups-rbac.yaml
+  - fixups-job.yaml

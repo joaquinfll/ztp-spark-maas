@@ -1,0 +1,43 @@
+# Values for the Red Hat chart redhat-openshift-mcp-server 0.3.0
+# (registry.redhat.io/openshift-mcp-tech-preview/openshift-mcp-server-rhel9:0.3),
+# released as redhat-openshift-mcp-server in the llm namespace.
+openshift: true
+
+# The chart enables an Ingress (Route) by default. Off: the endpoint has no
+# authentication, so it stays a ClusterIP Service inside the cluster.
+ingress:
+  enabled: false
+
+# Rendered into config.toml (toToml)
+config:
+  port: "{{ .Values.service.port }}"
+  cluster_provider_strategy: in-cluster
+  # Only tools annotated readOnlyHint=true; never anything destructive
+  read_only: true
+  disable_destructive: true
+  stateless: true
+  # The server's default toolsets (14 read-only tools). Also available:
+  # helm, kcp, kubevirt, metrics, netedge, openshift, ossm, tekton
+  toolsets:
+    - core
+    - config
+  denied_resources:
+    - group: ""
+      version: v1
+      kind: Secret
+
+rbac:
+  create: true
+  # The chart grants nothing by default. cluster-reader: get/list/watch on
+  # (almost) every resource, cluster-scoped ones included, and no Secrets. It is
+  # not strictly read-only on this cluster: besides the usual access/token
+  # reviews, RHOAI aggregates `update` on nim.opendatahub.io accounts/status and
+  # `post` on serving.opendatahub.io models into it. read_only = true keeps the
+  # server from using either; check the role with
+  #   oc get clusterrole cluster-reader -o yaml
+  extraClusterRoleBindings:
+    - name: cluster-reader
+      roleRef:
+        kind: ClusterRole
+        name: cluster-reader
+        external: true

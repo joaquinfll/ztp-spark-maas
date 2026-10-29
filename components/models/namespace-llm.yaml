@@ -1,0 +1,11 @@
+# Model namespace, labelled for MaaS gateway access and the dashboard
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: llm
+  labels:
+    opendatahub.io/generated-namespace: "true"
+    maas.opendatahub.io/gateway-access: "true"
+    opendatahub.io/dashboard: "true"
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false

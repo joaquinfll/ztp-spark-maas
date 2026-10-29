@@ -1,0 +1,9 @@
+# RHOAI 3.5+: DSCI, DSC with aigateway.modelsAsAService Managed, HardwareProfile, Dashboard flags
+# selfHeal re-applies the dashboard flags if the operator overrides them.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - dscinitialization.yaml
+  - datasciencecluster.yaml
+  - hardwareprofile.yaml
+  - odh-dashboard-config.yaml

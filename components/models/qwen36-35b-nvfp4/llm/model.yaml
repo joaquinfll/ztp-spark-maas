@@ -1,0 +1,49 @@
+# Red Hat AI Qwen3.6-35B-A3B NVFP4 on vLLM CUDA
+# Mixture-of-Experts model (35B total, ~3B active params) with NVFP4 weights
+# Model weights: OCI modelcar from registry.redhat.io
+# Runtime: platform default vLLM CUDA template (no container image override)
+# Requires: NVIDIA Blackwell GPU (NVFP4), ~65Gi RAM - verified on NVIDIA GB10 (DGX Spark)
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  name: redhataiqwen36-35b-a3b-nvfp4
+  annotations:
+    openshift.io/display-name: "RedHatAI/Qwen3.6-35B-A3B-NVFP4"
+    opendatahub.io/model-type: generative
+    security.opendatahub.io/enable-auth: "true"
+  labels:
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/genai-asset: "true"
+spec:
+  model:
+    name: redhataiqwen36-35b-a3b-nvfp4
+    uri: oci://registry.redhat.io/rhai/modelcar-redhatai-qwen3-6-35b-a3b-nvfp4:3.0
+  replicas: 1
+  router:
+    route: {}
+    scheduler: {}
+    gateway:
+      refs:
+        - name: maas-default-gateway
+          namespace: openshift-ingress
+  template:
+    tolerations:
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Exists
+    containers:
+      - name: main
+        env:
+          # Tool calling for agentic clients; 0.5 GPU memory leaves headroom on unified-memory GPUs (GB10)
+          # --enable-force-include-usage: report token usage on streamed responses so MaaS rate limits apply
+          - name: VLLM_ADDITIONAL_ARGS
+            value: "--tool-call-parser qwen3_coder --enable-auto-tool-choice --gpu-memory-utilization=0.5000 --kv-cache-dtype fp8 --enable-force-include-usage"
+        resources:
+          requests:
+            cpu: "4"
+            memory: 65Gi
+            nvidia.com/gpu: "1"
+          limits:
+            cpu: "4"
+            memory: 65Gi
+            nvidia.com/gpu: "1"

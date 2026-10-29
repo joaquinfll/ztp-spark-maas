@@ -1,0 +1,41 @@
+# Read-only OpenShift MCP server: Red Hat Helm chart in llm (in-cluster only)
+# plus its dashboard registration from components/openshift-mcp-server.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openshift-mcp-server
+  namespace: openshift-gitops
+  annotations:
+    # After models, which creates the llm namespace
+    argocd.argoproj.io/sync-wave: "6"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.openshift.io
+      chart: redhat-openshift-mcp-server
+      targetRevision: 0.3.0
+      helm:
+        releaseName: redhat-openshift-mcp-server
+        valueFiles:
+          - $values/components/openshift-mcp-server/values.yaml
+    - repoURL: https://github.com/joaquinfll/ztp-spark-maas.git
+      targetRevision: main
+      path: components/openshift-mcp-server
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: llm
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

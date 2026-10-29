@@ -1,0 +1,7 @@
+# Members get the qwen36-35b-nvfp4-agentic tier (priority 30). Add users here and push;
+# API keys minted before joining keep their old subscription.
+apiVersion: user.openshift.io/v1
+kind: Group
+metadata:
+  name: agentic-coders
+users: []

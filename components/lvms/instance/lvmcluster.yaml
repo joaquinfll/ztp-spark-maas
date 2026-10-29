@@ -1,0 +1,21 @@
+# LVM Storage on the NVMe partition created by openshift/98-master-lvms-partition.yaml.
+# Apply after the LVMS operator CSV has Succeeded (the LVMCluster CRD comes with it).
+# Same settings as the original cluster, which used the USB stick (/dev/sda) instead.
+apiVersion: lvm.topolvm.io/v1alpha1
+kind: LVMCluster
+metadata:
+  name: lvmcluster
+  namespace: openshift-lvm-storage
+spec:
+  storage:
+    deviceClasses:
+      - name: vg1
+        default: true      # StorageClass lvms-vg1 becomes the cluster default
+        fstype: xfs
+        deviceSelector:
+          paths:
+            - /dev/nvme0n1p5
+        thinPoolConfig:
+          name: thin-pool-1
+          sizePercent: 90
+          overprovisionRatio: 10

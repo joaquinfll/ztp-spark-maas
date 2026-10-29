@@ -1,0 +1,7 @@
+# Dashboard registration for the OpenShift MCP server. The server itself is the
+# Red Hat Helm chart (redhat-openshift-mcp-server from charts.openshift.io),
+# rendered by the openshift-mcp-server Application with values.yaml from here.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ai-asset-endpoint.yaml

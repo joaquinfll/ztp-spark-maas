@@ -1,0 +1,26 @@
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: MaaSSubscription
+metadata:
+  name: qwen36-35b-nvfp4-agentic
+  namespace: models-as-a-service
+  annotations:
+    openshift.io/display-name: "Qwen3.6 35B NVFP4 Agentic Coding Tier"
+    openshift.io/description: "Agentic coding tier: 300000 tokens/min burst, 3M tokens/hour, 20M tokens/day per user"
+spec:
+  owner:
+    groups:
+      - name: agentic-coders
+    users: []
+  modelRefs:
+    - name: redhataiqwen36-35b-a3b-nvfp4
+      namespace: llm
+      # Agents resend the full context every turn, so budgets are sized in millions of tokens.
+      # Keep the 1m burst at or above max-model-len (262144) so a full-context turn is not throttled.
+      tokenRateLimits:
+        - limit: 300000
+          window: 1m
+        - limit: 3000000
+          window: 1h
+        - limit: 20000000
+          window: 24h
+  priority: 30

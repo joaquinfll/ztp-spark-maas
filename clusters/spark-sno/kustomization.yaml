@@ -1,0 +1,17 @@
+# App of apps for spark-sno. Waves order creation; every child Application retries
+# 10 times (30s-5m backoff) while its operators and dependencies come up.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - apps/lvms-operator.yaml
+  - apps/metallb-operator.yaml
+  - apps/gpu-operators.yaml
+  - apps/maas-operators.yaml
+  - apps/lvms-instance.yaml
+  - apps/metallb-instance.yaml
+  - apps/gpu-instances.yaml
+  - apps/maas-platform.yaml
+  - apps/maas-db.yaml
+  - apps/rhoai-config.yaml
+  - apps/models.yaml
+  - apps/openshift-mcp-server.yaml
