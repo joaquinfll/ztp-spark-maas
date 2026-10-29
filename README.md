@@ -38,7 +38,7 @@ components/
 | 5 | `models`, `observability` |
 | 6 | `openshift-mcp-server` |
 
-Waves only order creation. Every child Application has automated prune and self-heal, `SkipDryRunOnMissingResource=true`, and retries 10 times (30s to 5m backoff, about 40 minutes). If a sync still fails after that, Argo CD waits for a new commit or a manual sync. A first install takes 30-60 minutes (operators, GPU driver build, model pull and load).
+Waves only order creation. Every child Application has automated prune and self-heal, `SkipDryRunOnMissingResource=true`, and retries forever (30s to 5m backoff) with `refresh: true`, so each retry uses the latest commit and a pushed fix is picked up without a manual sync. A first install takes 30-60 minutes (operators, GPU driver build, model pull and load).
 
 ## Notes
 

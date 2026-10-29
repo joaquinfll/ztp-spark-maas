@@ -26,7 +26,8 @@ spec:
       # Lets maas-telemetry.yaml patch only its fields on operator-owned CRs
       - ServerSideApply=true
     retry:
-      limit: 10
+      limit: -1
+      refresh: true
       backoff:
         duration: 30s
         factor: 2

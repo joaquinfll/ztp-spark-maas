@@ -1,5 +1,5 @@
 # App of apps for spark-sno. Waves order creation; every child Application retries
-# 10 times (30s-5m backoff) while its operators and dependencies come up.
+# forever (30s-5m backoff) on the latest commit while its dependencies come up.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:

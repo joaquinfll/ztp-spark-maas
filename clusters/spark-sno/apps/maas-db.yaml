@@ -24,7 +24,8 @@ spec:
       # Operand CRDs appear only after the operator installs - keep retrying until they exist
       - SkipDryRunOnMissingResource=true
     retry:
-      limit: 10
+      limit: -1
+      refresh: true
       backoff:
         duration: 30s
         factor: 2
